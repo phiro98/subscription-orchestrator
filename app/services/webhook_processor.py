@@ -58,7 +58,8 @@ class WebhookProcessor:
         secret = settings.WEBHOOK_SECRETS.get(gateway.lower())
         if not secret:
             raise InvalidWebhookSignatureError(
-                gateway, f"No webhook verification secret configured for gateway '{gateway}'."
+                gateway,
+                f"No webhook verification secret configured for gateway '{gateway}'.",
             )
 
         timestamp: Optional[int] = None
@@ -81,7 +82,9 @@ class WebhookProcessor:
             extracted_sig = signature_header.strip()
 
         if not extracted_sig:
-            raise InvalidWebhookSignatureError(gateway, "Missing or malformed signature header.")
+            raise InvalidWebhookSignatureError(
+                gateway, "Missing or malformed signature header."
+            )
 
         # Replay attack prevention check
         now = int(time.time())
@@ -105,7 +108,9 @@ class WebhookProcessor:
 
         return timestamp
 
-    async def get_existing_event(self, gateway: str, event_id: str) -> Optional[WebhookEvent]:
+    async def get_existing_event(
+        self, gateway: str, event_id: str
+    ) -> Optional[WebhookEvent]:
         """Queries database for previously ingested webhook event."""
         stmt = select(WebhookEvent).where(
             WebhookEvent.gateway == gateway,
@@ -131,7 +136,9 @@ class WebhookProcessor:
         # 1. Deduplication Check
         existing_event = await self.get_existing_event(gateway, event_id)
         if existing_event is not None:
-            logger.info(f"Duplicate webhook received: gateway={gateway}, event_id={event_id}. Skipping.")
+            logger.info(
+                f"Duplicate webhook received: gateway={gateway}, event_id={event_id}. Skipping."
+            )
             return WebhookProcessingResult(
                 status=WebhookProcessingStatus.DUPLICATE,
                 event_id=event_id,
@@ -141,11 +148,7 @@ class WebhookProcessor:
 
         # 2. Acquire transactional row-level lock on Subscription (SELECT ... FOR UPDATE)
         # Guarantees no concurrent transactions can interleave or modify the subscription
-        stmt = (
-            select(Subscription)
-            .where(Subscription.id == sub_id)
-            .with_for_update()
-        )
+        stmt = select(Subscription).where(Subscription.id == sub_id).with_for_update()
         result = await self.db.execute(stmt)
         subscription = result.scalar_one_or_none()
 
@@ -200,7 +203,8 @@ class WebhookProcessor:
             )
             tx = Transaction(
                 subscription_id=subscription.id,
-                gateway_transaction_id=event_payload.data.gateway_transaction_id or f"gtx_{event_id}",
+                gateway_transaction_id=event_payload.data.gateway_transaction_id
+                or f"gtx_{event_id}",
                 amount_in_cents=event_payload.data.amount_in_cents,
                 currency=event_payload.data.currency or "USD",
                 status=tx_status,

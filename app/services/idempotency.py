@@ -122,10 +122,14 @@ class IdempotencyManager:
         elif isinstance(payload, str):
             raw = payload.encode("utf-8")
         else:
-            raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+                "utf-8"
+            )
         return hashlib.sha256(raw).hexdigest()
 
-    async def get_existing_record(self, idempotency_key: str) -> Optional[IdempotencyRecord]:
+    async def get_existing_record(
+        self, idempotency_key: str
+    ) -> Optional[IdempotencyRecord]:
         """Fetches durable record from database."""
         stmt = select(IdempotencyRecord).where(
             IdempotencyRecord.idempotency_key == idempotency_key
@@ -162,21 +166,27 @@ class IdempotencyManager:
 
             if record.status == IdempotencyStatus.COMPLETED:
                 body = json.loads(record.response_body) if record.response_body else {}
-                logger.info(f"Replaying cached response for idempotency key '{idempotency_key}'")
+                logger.info(
+                    f"Replaying cached response for idempotency key '{idempotency_key}'"
+                )
                 return True, (record.response_code or 200, body), None
 
             if record.status == IdempotencyStatus.STARTED:
                 # If the lock lease is still valid, reject concurrent execution
                 expires_at_utc = normalize_utc(record.expires_at)
                 if expires_at_utc and expires_at_utc > utc_now():
-                    logger.warning(f"In-flight mutation detected for key '{idempotency_key}'")
+                    logger.warning(
+                        f"In-flight mutation detected for key '{idempotency_key}'"
+                    )
                     raise IdempotencyConflictError(idempotency_key)
 
         # Step 2: Acquire Redis distributed lock
         lock = DistributedLock(self.redis, idempotency_key, ttl_seconds=ttl_seconds)
         acquired = await lock.acquire()
         if not acquired:
-            logger.warning(f"Redis lock acquisition denied for key '{idempotency_key}' (in-flight)")
+            logger.warning(
+                f"Redis lock acquisition denied for key '{idempotency_key}' (in-flight)"
+            )
             raise IdempotencyConflictError(idempotency_key)
 
         # Step 3: Record STARTED state in PostgreSQL
@@ -213,7 +223,9 @@ class IdempotencyManager:
                 record.status = IdempotencyStatus.COMPLETED
                 record.response_code = status_code
                 record.response_body = json.dumps(response_body, default=str)
-                record.expires_at = utc_now() + timedelta(seconds=settings.IDEMPOTENCY_RETENTION_SECONDS)
+                record.expires_at = utc_now() + timedelta(
+                    seconds=settings.IDEMPOTENCY_RETENTION_SECONDS
+                )
                 await self.db.commit()
         finally:
             if lock:
@@ -231,7 +243,9 @@ class IdempotencyManager:
                 record.status = IdempotencyStatus.FAILED
                 await self.db.commit()
         except Exception as e:
-            logger.error(f"Failed to update failed idempotency record '{idempotency_key}': {e}")
+            logger.error(
+                f"Failed to update failed idempotency record '{idempotency_key}': {e}"
+            )
         finally:
             if lock:
                 await lock.release()

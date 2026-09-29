@@ -25,7 +25,9 @@ router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
     status_code=status.HTTP_200_OK,
     summary="Ingest external payment gateway webhook",
     responses={
-        200: {"description": "Webhook received and processed (or duplicate/out-of-order safely handled)"},
+        200: {
+            "description": "Webhook received and processed (or duplicate/out-of-order safely handled)"
+        },
         400: {"description": "Replay attack detected or timestamp drift"},
         401: {"description": "HMAC signature verification failed"},
         404: {"description": "Subscription target not found"},
@@ -42,7 +44,8 @@ async def handle_gateway_webhook(
     sig_header = stripe_signature or x_signature
     if not sig_header:
         raise InvalidWebhookSignatureError(
-            gateway, "Missing signature header (Stripe-Signature or X-Signature required)."
+            gateway,
+            "Missing signature header (Stripe-Signature or X-Signature required).",
         )
 
     # 1. Read raw body bytes for cryptographic HMAC verification

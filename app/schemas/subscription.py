@@ -9,13 +9,24 @@ from app.domain.enums import SubscriptionStatus, TransactionStatus
 
 class CreateSubscriptionRequest(BaseModel):
     user_id: str = Field(..., min_length=1, max_length=64, examples=["usr_987654321"])
-    plan_id: str = Field(..., min_length=1, max_length=64, examples=["plan_premium_tier"])
-    current_period_end: datetime = Field(..., description="End date for the initial billing period")
+    plan_id: str = Field(
+        ..., min_length=1, max_length=64, examples=["plan_premium_tier"]
+    )
+    current_period_end: datetime = Field(
+        ..., description="End date for the initial billing period"
+    )
 
 
 class ChargeSubscriptionRequest(BaseModel):
-    subscription_id: str = Field(..., min_length=1, max_length=36, examples=["018e47d1-0000-7000-8000-000000000001"])
-    amount_in_cents: int = Field(..., gt=0, examples=[1999], description="Amount in cents (must be > 0)")
+    subscription_id: str = Field(
+        ...,
+        min_length=1,
+        max_length=36,
+        examples=["018e47d1-0000-7000-8000-000000000001"],
+    )
+    amount_in_cents: int = Field(
+        ..., gt=0, examples=[1999], description="Amount in cents (must be > 0)"
+    )
     currency: str = Field(default="USD", min_length=3, max_length=3, examples=["USD"])
     payment_method_id: Optional[str] = Field(None, examples=["pm_card_visa_4242"])
 

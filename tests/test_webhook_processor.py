@@ -103,7 +103,9 @@ async def test_webhook_out_of_order_protection(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_webhook_newer_event_advances_state_and_deduplicates(db_session: AsyncSession):
+async def test_webhook_newer_event_advances_state_and_deduplicates(
+    db_session: AsyncSession,
+):
     now = datetime.now(timezone.utc)
     sub = Subscription(
         id="sub_test_flow",

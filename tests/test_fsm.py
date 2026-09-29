@@ -27,26 +27,34 @@ def test_valid_transitions():
     sub = create_sample_subscription(SubscriptionStatus.PENDING)
 
     # PENDING -> ACTIVE
-    changed = SubscriptionFSM.transition(sub, SubscriptionStatus.ACTIVE, event_timestamp=1100)
+    changed = SubscriptionFSM.transition(
+        sub, SubscriptionStatus.ACTIVE, event_timestamp=1100
+    )
     assert changed is True
     assert sub.status == SubscriptionStatus.ACTIVE
     assert sub.version == 2
     assert sub.last_event_timestamp == 1100
 
     # ACTIVE -> PAST_DUE
-    changed = SubscriptionFSM.transition(sub, SubscriptionStatus.PAST_DUE, event_timestamp=1200)
+    changed = SubscriptionFSM.transition(
+        sub, SubscriptionStatus.PAST_DUE, event_timestamp=1200
+    )
     assert changed is True
     assert sub.status == SubscriptionStatus.PAST_DUE
     assert sub.version == 3
 
     # PAST_DUE -> ACTIVE
-    changed = SubscriptionFSM.transition(sub, SubscriptionStatus.ACTIVE, event_timestamp=1300)
+    changed = SubscriptionFSM.transition(
+        sub, SubscriptionStatus.ACTIVE, event_timestamp=1300
+    )
     assert changed is True
     assert sub.status == SubscriptionStatus.ACTIVE
     assert sub.version == 4
 
     # ACTIVE -> CANCELED
-    changed = SubscriptionFSM.transition(sub, SubscriptionStatus.CANCELED, event_timestamp=1400)
+    changed = SubscriptionFSM.transition(
+        sub, SubscriptionStatus.CANCELED, event_timestamp=1400
+    )
     assert changed is True
     assert sub.status == SubscriptionStatus.CANCELED
     assert sub.version == 5
@@ -84,7 +92,9 @@ def test_idempotent_self_transitions():
     initial_version = sub.version
 
     # Transitioning ACTIVE -> ACTIVE should return False (no change) and not fail
-    changed = SubscriptionFSM.transition(sub, SubscriptionStatus.ACTIVE, event_timestamp=2000)
+    changed = SubscriptionFSM.transition(
+        sub, SubscriptionStatus.ACTIVE, event_timestamp=2000
+    )
     assert changed is False
     assert sub.status == SubscriptionStatus.ACTIVE
     assert sub.version == initial_version

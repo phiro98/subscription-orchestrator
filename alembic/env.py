@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
 from app.db.base import Base
+
 # Import all models to ensure metadata registration
 import app.domain.models  # noqa: F401
 

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class SubscriptionFSM:
     """
     Deterministic Finite State Machine (FSM) governing subscription lifecycles.
-    
+
     States:
         PENDING   -> Initial state awaiting first charge.
         ACTIVE    -> Valid recurring subscriber in good standing.
@@ -30,17 +30,27 @@ class SubscriptionFSM:
     # Strict transition graph mapping source state to set of allowable destination states
     _TRANSITION_RULES: Dict[SubscriptionStatus, FrozenSet[SubscriptionStatus]] = {
         SubscriptionStatus.PENDING: frozenset(
-            {SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELED, SubscriptionStatus.PENDING}
+            {
+                SubscriptionStatus.ACTIVE,
+                SubscriptionStatus.CANCELED,
+                SubscriptionStatus.PENDING,
+            }
         ),
         SubscriptionStatus.ACTIVE: frozenset(
-            {SubscriptionStatus.PAST_DUE, SubscriptionStatus.CANCELED, SubscriptionStatus.ACTIVE}
+            {
+                SubscriptionStatus.PAST_DUE,
+                SubscriptionStatus.CANCELED,
+                SubscriptionStatus.ACTIVE,
+            }
         ),
         SubscriptionStatus.PAST_DUE: frozenset(
-            {SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELED, SubscriptionStatus.PAST_DUE}
+            {
+                SubscriptionStatus.ACTIVE,
+                SubscriptionStatus.CANCELED,
+                SubscriptionStatus.PAST_DUE,
+            }
         ),
-        SubscriptionStatus.CANCELED: frozenset(
-            {SubscriptionStatus.CANCELED}
-        ),
+        SubscriptionStatus.CANCELED: frozenset({SubscriptionStatus.CANCELED}),
     }
 
     @classmethod
@@ -62,7 +72,10 @@ class SubscriptionFSM:
         Validates the proposed transition. Raises IllegalStateTransitionError if illegal.
         Self-transitions are allowed idempotently.
         """
-        if current_status == SubscriptionStatus.CANCELED and target_status != SubscriptionStatus.CANCELED:
+        if (
+            current_status == SubscriptionStatus.CANCELED
+            and target_status != SubscriptionStatus.CANCELED
+        ):
             raise IllegalStateTransitionError(
                 current_status=current_status.value,
                 target_status=target_status.value,
@@ -105,7 +118,10 @@ class SubscriptionFSM:
         old_status = subscription.status
         subscription.status = target_status
         subscription.version += 1
-        if event_timestamp is not None and event_timestamp > subscription.last_event_timestamp:
+        if (
+            event_timestamp is not None
+            and event_timestamp > subscription.last_event_timestamp
+        ):
             subscription.last_event_timestamp = event_timestamp
 
         logger.info(
@@ -115,7 +131,9 @@ class SubscriptionFSM:
         return True
 
     @classmethod
-    def map_event_to_target_status(cls, event_type: str) -> Optional[SubscriptionStatus]:
+    def map_event_to_target_status(
+        cls, event_type: str
+    ) -> Optional[SubscriptionStatus]:
         """Maps normalized gateway event types to deterministic subscription target states."""
         normalized = event_type.lower().strip()
         if normalized in {

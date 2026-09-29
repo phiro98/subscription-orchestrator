@@ -57,7 +57,9 @@ async def fake_redis() -> AsyncGenerator[FakeRedis, None]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def idempotency_manager(db_session: AsyncSession, fake_redis: FakeRedis) -> IdempotencyManager:
+async def idempotency_manager(
+    db_session: AsyncSession, fake_redis: FakeRedis
+) -> IdempotencyManager:
     return IdempotencyManager(db_session=db_session, redis_client=fake_redis)
 
 

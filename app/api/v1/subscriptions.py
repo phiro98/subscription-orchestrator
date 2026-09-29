@@ -75,10 +75,14 @@ async def get_subscription(
     status_code=status.HTTP_200_OK,
     summary="Charge subscription with distributed idempotency guarantee",
     responses={
-        200: {"description": "Subscription charged successfully or cached idempotent replay"},
+        200: {
+            "description": "Subscription charged successfully or cached idempotent replay"
+        },
         400: {"description": "Missing or malformed Idempotency-Key header"},
         404: {"description": "Subscription not found"},
-        409: {"description": "Idempotency conflict (in flight) or illegal state transition"},
+        409: {
+            "description": "Idempotency conflict (in flight) or illegal state transition"
+        },
         422: {"description": "Idempotency key payload mismatch or validation error"},
     },
 )
@@ -181,5 +185,7 @@ async def charge_subscription(
 
     except Exception:
         # On failure, release distributed lock and reset idempotency state
-        await idempotency_mgr.abort_operation(idempotency_key=idempotency_key, lock=lock)
+        await idempotency_mgr.abort_operation(
+            idempotency_key=idempotency_key, lock=lock
+        )
         raise

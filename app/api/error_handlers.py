@@ -71,8 +71,12 @@ def register_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        logger.exception(f"Unhandled server error processing {request.method} {request.url.path}: {exc}")
+    async def unhandled_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        logger.exception(
+            f"Unhandled server error processing {request.method} {request.url.path}: {exc}"
+        )
         problem_doc = {
             "type": "https://api.platform.internal/errors/internal-server-error",
             "title": "Internal Server Error",

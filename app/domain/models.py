@@ -83,9 +83,7 @@ class Subscription(Base):
         order_by="desc(Transaction.created_at)",
     )
 
-    __table_args__ = (
-        Index("ix_subscriptions_user_status", "user_id", "status"),
-    )
+    __table_args__ = (Index("ix_subscriptions_user_status", "user_id", "status"),)
 
 
 class Transaction(Base):

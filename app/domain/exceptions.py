@@ -18,7 +18,10 @@ class OrchestratorDomainException(Exception):
         self.title = title
         self.detail = detail
         self.status_code = status_code
-        self.type_uri = type_uri or f"https://api.platform.internal/errors/{self.__class__.__name__}"
+        self.type_uri = (
+            type_uri
+            or f"https://api.platform.internal/errors/{self.__class__.__name__}"
+        )
         self.extra = extra or {}
 
     def to_problem_detail(self, instance: Optional[str] = None) -> Dict[str, Any]:
@@ -110,7 +113,8 @@ class InvalidWebhookSignatureError(OrchestratorDomainException):
     def __init__(self, gateway: str, detail: Optional[str] = None):
         super().__init__(
             title="Invalid Webhook Signature",
-            detail=detail or f"HMAC signature verification failed for gateway '{gateway}'.",
+            detail=detail
+            or f"HMAC signature verification failed for gateway '{gateway}'.",
             status_code=401,
             type_uri="https://api.platform.internal/errors/invalid-webhook-signature",
             extra={"gateway": gateway},

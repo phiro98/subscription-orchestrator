@@ -57,7 +57,7 @@ jobs:
       - name: Run Linter (Ruff)
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          ruff check . --select E9,F63,F7,F82 --show-source
+          ruff check . --select E9,F63,F7,F82
           # exit-zero treats all other warnings as non-fatal
           ruff check . --exit-zero
 
